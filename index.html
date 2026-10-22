@@ -1,0 +1,622 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15132b">
+<title>Vibe Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ff; --paper:#ffffff; --ink:#15132b; --ink-2:#4b4868; --line:#15132b;
+  --lime:#c6f432; --coral:#ff6b5b; --sky:#5bc8ff; --sun:#ffd23f; --lilac:#b9a7ff;
+  --good:#1fa463; --bad:#e2412f; --soft:#ece9ff;
+  --display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --body:"DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r:18px; --sh:4px 4px 0 var(--line);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121026; --paper:#1d1a3a; --ink:#f3f1ff; --ink-2:#bdb8e3; --line:#0a0918; --soft:#2a2652; color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121026; --paper:#1d1a3a; --ink:#f3f1ff; --ink-2:#bdb8e3; --line:#0a0918; --soft:#2a2652; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg); color:var(--ink); font:16px/1.5 var(--body); margin:0;
+  background-image:radial-gradient(var(--soft) 1.2px, transparent 1.2px); background-size:22px 22px;}
+.app{max-width:560px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;
+  padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); padding-block:16px 28px}
+h1,h2,h3{font-family:var(--display); line-height:1.08; margin:0; text-wrap:balance; letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit; color:inherit}
+.muted{color:var(--ink-2)}
+.tiny{font-size:.82rem}
+
+.card{background:var(--paper); border:2.5px solid var(--line); border-radius:var(--r); box-shadow:var(--sh); padding:20px}
+.stack{display:flex; flex-direction:column; gap:14px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:12px 20px;
+  border:2.5px solid var(--line); border-radius:14px; background:var(--lime); color:#15132b; font:800 1.02rem var(--display);
+  box-shadow:var(--sh); cursor:pointer; transition:transform .08s, box-shadow .08s; text-align:center}
+.btn:active{transform:translate(3px,3px); box-shadow:1px 1px 0 var(--line)}
+.btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
+.btn.alt{background:var(--paper); color:var(--ink)}
+.btn.block{width:100%}
+.btn:focus-visible,.opt:focus-visible,.link:focus-visible{outline:3px solid var(--sky); outline-offset:3px}
+.link{background:none; border:0; padding:6px; cursor:pointer; text-decoration:underline; font-weight:700; color:var(--ink-2); align-self:center}
+.eyebrow{font:800 .74rem var(--mono); letter-spacing:.12em; text-transform:uppercase}
+.tag{display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border:2px solid var(--line); border-radius:99px; font:800 .74rem var(--mono); background:var(--sun); color:#15132b; letter-spacing:.06em; align-self:flex-start}
+
+.hero{position:relative; overflow:hidden; background:#15132b; color:#fff; border-color:#000}
+.hero h1{font-size:clamp(2.6rem,11vw,3.5rem); font-weight:800; line-height:.92}
+.hero h1 em{font-style:normal; color:var(--lime)}
+.hero p{color:#d9d6f5}
+.sticker{position:absolute; border:2.5px solid #000; border-radius:14px; font:800 .8rem var(--display); padding:6px 10px; color:#15132b; box-shadow:3px 3px 0 #000}
+.archmini{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.archmini div{border:2px solid var(--line); border-radius:12px; padding:8px 10px; color:#15132b; font:800 .9rem var(--display)}
+.archmini small{display:block; font:600 .72rem var(--body)}
+.field{display:flex; flex-direction:column; gap:6px; font-weight:700}
+.input{width:100%; min-height:52px; padding:12px 14px; border:2.5px solid var(--line); border-radius:14px; background:var(--paper); color:var(--ink); font:600 1.05rem var(--body)}
+.input:focus{outline:3px solid var(--sky); outline-offset:2px}
+.input.code{text-transform:uppercase; letter-spacing:.2em; font-family:var(--mono)}
+
+.q{font:700 1.3rem/1.25 var(--display)}
+.opts{display:grid; gap:10px}
+.opt{display:flex; gap:12px; align-items:center; text-align:left; width:100%; min-height:58px; padding:12px 14px;
+  border:2.5px solid var(--line); border-radius:14px; background:var(--paper); cursor:pointer; box-shadow:3px 3px 0 var(--line); font-weight:600}
+.opt .k{width:30px; height:30px; flex:none; border-radius:9px; border:2px solid var(--line); display:grid; place-items:center; font:800 .85rem var(--mono); background:var(--soft)}
+.opt.on{background:var(--lime); color:#15132b} .opt.on .k{background:#15132b; color:#fff}
+.progress-dots{display:flex; gap:5px; flex-wrap:wrap; align-items:center}
+.progress-dots i{width:28px; height:7px; border-radius:99px; background:var(--soft); border:1.5px solid var(--line)}
+.progress-dots i.on{background:var(--ink)}
+.progress-dots span{font:800 .8rem var(--mono); margin-left:6px}
+
+.fb{border:2.5px solid var(--line); border-radius:14px; padding:12px 14px; font-size:.95rem; box-shadow:3px 3px 0 var(--line)}
+.fb.good{background:#d6f7e5; color:#0f3d26} .fb.bad{background:#ffe9c7; color:#5a3a00}
+.fb b{font-family:var(--display)}
+
+.arch{color:#15132b}
+.arch h2{font-size:2.3rem}
+.arch .pill{align-self:flex-start; display:inline-block; background:#ffffffb0; border:2px solid #15132b; border-radius:99px; padding:3px 10px; font:800 .75rem var(--mono)}
+.arch dl{display:grid; gap:10px; margin:0}
+.arch dt{font:800 .74rem var(--mono); letter-spacing:.1em; text-transform:uppercase}
+.arch dd{margin:2px 0 0}
+.bars{display:grid; gap:6px}
+.barrow{display:grid; grid-template-columns:96px 1fr 26px; gap:8px; align-items:center; font-size:.82rem; font-weight:700}
+.barrow div{height:12px; border:2px solid var(--line); border-radius:99px; background:var(--paper); overflow:hidden}
+.barrow div i{display:block; height:100%}
+.send{border:2.5px solid var(--line); border-radius:14px; padding:12px 14px; font-weight:700}
+.send.ok{background:#d6f7e5; color:#0f3d26} .send.wait{background:var(--soft)} .send.err{background:#ffe9c7; color:#5a3a00}
+
+.guide h3{font-size:1.1rem; margin-top:4px}
+.guide ol,.guide ul{margin:6px 0 0; padding-left:20px; display:grid; gap:6px}
+.time{font:800 .78rem var(--mono); background:var(--sky); color:#15132b; border:2px solid var(--line); border-radius:8px; padding:1px 7px}
+hr.dash{border:0; border-top:2px dashed var(--line); width:100%; margin:0}
+
+.pop{animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{from{transform:scale(.92); opacity:.2}}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+canvas.confetti{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:40}
+
+/* ---- papan pengajar ---- */
+body.wide .app{max-width:1400px}
+body.wide .foot{color:#bdb8e3}
+body.wide{background:#15132b; background-image:radial-gradient(#2a2652 1.2px, transparent 1.2px)}
+.board{color:#fff; display:flex; flex-direction:column; gap:16px}
+.bhead{display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap}
+.btitle{min-width:0; flex:1 1 300px} .btitle h1{font-size:clamp(1.6rem,3.4vw,2.6rem)}
+.bjoin{display:flex; gap:14px; align-items:center; background:#fff; color:#15132b; border:3px solid #000; border-radius:18px; padding:12px 14px; box-shadow:5px 5px 0 #000}
+.bjoin small{display:block; font:800 .66rem var(--mono); letter-spacing:.1em; text-transform:uppercase; color:#4b4868}
+.bjoin .burl{display:block; font:700 .9rem var(--body); word-break:break-all; max-width:260px; margin-bottom:4px}
+.bjoin .bcode{display:block; font:800 2.4rem/1 var(--mono); letter-spacing:.12em}
+.qr{width:132px; height:132px; flex:none} .qr svg{width:132px; height:132px; display:block}
+.bgrid{display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:16px; align-items:start}
+.acards{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.acard{border:3px solid #000; border-radius:20px; box-shadow:5px 5px 0 #000; padding:16px 18px; color:#15132b; display:flex; flex-direction:column; gap:6px; min-height:190px; min-width:0}
+.acard .top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.acard h3{font-size:clamp(1.3rem,2.2vw,1.8rem)}
+.acard .tg{font:800 .72rem var(--mono); letter-spacing:.08em; text-transform:uppercase}
+.acard .num{font:800 clamp(2.6rem,5vw,4.2rem)/.9 var(--mono); text-align:right}
+.acard .pct{font:800 .85rem var(--mono); text-align:right}
+.acard .meter{height:12px; background:#ffffff80; border:2px solid #15132b; border-radius:99px; overflow:hidden; margin-top:auto}
+.acard .meter i{display:block; height:100%; background:#15132b; transition:width .6s}
+.names{display:flex; flex-wrap:wrap; gap:5px; max-height:120px; overflow:auto}
+.names span{background:#ffffffb8; border:1.5px solid #15132b; border-radius:99px; padding:1px 9px; font-size:.82rem; font-weight:700}
+.bstat{font:700 .95rem var(--mono); color:#bdb8e3; text-align:center; margin-top:4px}
+.bstat span#bTotal{color:var(--lime); font-size:1.25rem}
+.bside{display:flex; flex-direction:column; gap:14px; min-width:0}
+.bpanel{background:#1d1a3a; border:3px solid #000; border-radius:18px; box-shadow:5px 5px 0 #000; padding:16px; display:flex; flex-direction:column; gap:10px}
+.bpanel h3{font-size:1.05rem}
+.bpanel p{color:#e4e1ff; font-size:.95rem}
+.donut{width:150px; height:150px; align-self:center}
+.legend{display:grid; grid-template-columns:1fr 1fr; gap:4px 10px; font-size:.85rem}
+.legend span{display:flex; align-items:center; gap:6px} .legend i{width:12px; height:12px; border-radius:4px; border:1.5px solid #000; flex:none}
+.groups{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px}
+.group{background:#1d1a3a; border:3px solid #000; border-radius:16px; box-shadow:4px 4px 0 #000; padding:12px 14px}
+.group h4{margin:0 0 6px; font:800 1rem var(--display); color:var(--lime)}
+.group ul{list-style:none; margin:0; padding:0; display:grid; gap:4px; font-size:.92rem}
+.group li{display:flex; align-items:center; gap:7px} .group li i{width:11px; height:11px; border-radius:50%; border:1.5px solid #000; flex:none}
+.gctl{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.gctl label{display:flex; align-items:center; gap:8px; font-weight:700}
+.gctl input{width:74px; min-height:44px; border:2.5px solid #000; border-radius:12px; padding:6px 10px; font:800 1rem var(--mono); background:#fff; color:#15132b}
+.bctl{display:flex; flex-wrap:wrap; gap:8px}
+.bctl .btn,.gctl .btn{min-height:44px; padding:8px 14px; font-size:.9rem; box-shadow:3px 3px 0 #000; border-color:#000}
+body.wide .bctl .btn.alt, body.wide .gctl .btn.alt{background:#1d1a3a; color:#fff}
+.empty{color:#bdb8e3; font:700 1.05rem var(--display)}
+@media (max-width:900px){ .bgrid{grid-template-columns:1fr} .bjoin .bcode{font-size:1.8rem} }
+@media (max-width:520px){ .acards{grid-template-columns:1fr} .acard{min-height:0} }
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important}}
+.row{display:flex; gap:10px; flex-wrap:wrap}
+.row > *{flex:1 1 140px}
+.foot{margin-top:auto; padding-top:24px; text-align:center; font-size:.76rem; color:var(--ink-2)}
+</style>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>window.qrcode || document.write('<script src="vendor/qrcode-generator-1.4.4.js"><\/script>')</script>
+</head>
+<body>
+<div class="app">
+  <main id="screen" class="stack" aria-live="polite"></main>
+  <p class="foot">Pusat Pelatihan Sumber Daya Manusia Arsip Nasional Republik Indonesia · Mata Pelatihan Building Learning Commitment · Materi Pokok 1: Mengenal Diri Sendiri dan Orang Lain</p>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const ARCH = {
+  penjelajah:{name:"Si Penjelajah", color:"var(--lime)", hex:"#c6f432", tag:"Curious Explorer",
+    vibe:"Kamu belajar paling nempel lewat mencoba. Ide baru bikin kamu semangat.",
+    power:"Penuh ide, cepat beradaptasi, berani mencoba cara baru.",
+    blind:"Bisa loncat ke hal baru sebelum yang lama tuntas.",
+    team:"Beri ruang brainstorming, lalu bantu dia mengunci keputusan dan tenggat."},
+  perekat:{name:"Si Perekat", color:"var(--coral)", hex:"#ff6b5b", tag:"Vibe Keeper",
+    vibe:"Kamu peka sama suasana dan memastikan semua orang merasa dianggap.",
+    power:"Empati tinggi, pendengar yang baik, menjaga tim tetap akur.",
+    blind:"Kadang sungkan bilang tidak setuju supaya suasana tetap enak.",
+    team:"Ajak bicara personal dan tanyakan pendapatnya secara langsung."},
+  perancang:{name:"Si Perancang", color:"var(--sky)", hex:"#5bc8ff", tag:"Master Planner",
+    vibe:"Kamu suka yang jelas: jadwal, langkah, dan catatan yang rapi.",
+    power:"Teliti, terstruktur, bisa diandalkan menjaga kualitas.",
+    blind:"Bisa kaku ketika rencana berubah mendadak.",
+    team:"Beri informasi yang jelas dan waktu untuk menyiapkan diri."},
+  penggerak:{name:"Si Penggerak", color:"var(--sun)", hex:"#ffd23f", tag:"Action Taker",
+    vibe:"Kamu fokus ke hasil dan nggak betah kalau diskusi muter-muter.",
+    power:"Cepat ambil keputusan, berani memimpin, menggerakkan tim.",
+    blind:"Kadang kurang sabar mendengarkan pendapat yang berbeda.",
+    team:"Sampaikan to the point dan beri dia tanggung jawab memimpin aksi."},
+};
+const AK = Object.keys(ARCH);
+const VIBE_Q = [
+  {q:"Hari pertama pelatihan, kamu biasanya…", a:[
+    ["Kepo materi seru apa saja yang bakal dibahas","penjelajah"],["Kenalan dulu sama teman di sebelah","perekat"],
+    ["Cek jadwal dan catat tugas-tugasnya","perancang"],["Langsung tanya: targetnya apa nih?","penggerak"]]},
+  {q:"Diskusi kelompok mulai macet. Kamu…", a:[
+    ["Lempar ide random biar cair lagi","penjelajah"],["Cek siapa yang belum sempat bicara","perekat"],
+    ["Rangkum poin yang sudah disepakati","perancang"],["Usul bagi tugas dan pasang tenggat","penggerak"]]},
+  {q:"Cara belajar yang paling nempel buatmu…", a:[
+    ["Coba langsung, trial and error","penjelajah"],["Ngobrol dan diskusi bareng","perekat"],
+    ["Baca rangkuman atau skema yang rapi","perancang"],["Latihan soal atau tantangan berwaktu","penggerak"]]},
+  {q:"Kalau dapat kritik, reaksi pertamamu…", a:[
+    ["Penasaran, minta contohnya","penjelajah"],["Agak kepikiran, butuh waktu mencerna","perekat"],
+    ["Minta detail bagian mana yang perlu diperbaiki","perancang"],["Oke, langsung diperbaiki","penggerak"]]},
+  {q:"Yang paling bikin kamu bete di kelas…", a:[
+    ["Materi monoton tanpa variasi","penjelajah"],["Suasana tegang atau ada yang dicuekin","perekat"],
+    ["Jadwal berubah mendadak","perancang"],["Diskusi panjang tanpa keputusan","penggerak"]]},
+  {q:"Peran favoritmu di tim…", a:[
+    ["Tukang ide","penjelajah"],["Penjaga suasana","perekat"],["Pencatat dan penyusun","perancang"],["Penggerak dan penentu","penggerak"]]},
+];
+
+/* ============ STATE ============ */
+const KEY = "vibe-check:v1";
+const fresh = () => ({name:"", screen:"home", room:"", roomTitle:"", step:0, answers:[], arch:null, tally:null, sent:false});
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch(e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
+const $ = (s, r=document) => r.querySelector(s);
+const screen = $("#screen");
+const esc = (t) => String(t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cleanCode = (v) => String(v || "").toUpperCase().replace(/[^A-Z0-9]/g,"");
+
+/* ============ SERVER (Supabase RPC, hanya publishable key) ============ */
+const CFG = window.KQ_CONFIG || {};
+const ONLINE = Boolean(CFG.SUPABASE_URL && CFG.SUPABASE_KEY && !/xxxx|ISI_/.test(CFG.SUPABASE_URL + CFG.SUPABASE_KEY));
+async function api(fn, args){
+  if (!ONLINE) throw new Error("Aplikasi belum tersambung ke database (config.js belum diisi).");
+  const key = CFG.SUPABASE_KEY.trim();
+  const headers = {"Content-Type":"application/json", apikey:key};
+  if (key.startsWith("eyJ")) headers.Authorization = "Bearer " + key;
+  let res;
+  try { res = await fetch(CFG.SUPABASE_URL.replace(/\/+$/,"") + "/rest/v1/rpc/" + fn, {method:"POST", headers, body:JSON.stringify(args)}); }
+  catch(e) { throw new Error("Koneksi internet bermasalah. Coba lagi."); }
+  const txt = await res.text(); let data = null; try { data = txt ? JSON.parse(txt) : null; } catch(e) {}
+  if (!res.ok) throw new Error((data && (data.message || data.hint)) || `Server menolak (${res.status})`);
+  return data;
+}
+const CID = "vibe-check:client";
+function clientId(){
+  let id = null;
+  try { id = localStorage.getItem(CID); } catch(e) {}
+  if (!id) {
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map(x => x.toString(16).padStart(2,"0")).join("");
+    id = `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+    try { localStorage.setItem(CID, id); } catch(e) {}
+  }
+  return id;
+}
+const ADMIN_KEY = (code) => "vibe-check:admin:" + code;
+const getToken = (code) => { try { return localStorage.getItem(ADMIN_KEY(code)) || ""; } catch(e) { return ""; } };
+const setToken = (code, t) => { try { localStorage.setItem(ADMIN_KEY(code), t); } catch(e) {} };
+const baseUrl = () => location.origin + location.pathname;
+function newParticipant(){ S = fresh(); try { localStorage.removeItem(CID); } catch(e) {} save(); }
+function retake(){ Object.assign(S, {step:0, answers:[], arch:null, tally:null, sent:false}); save(); }
+
+/* ============ FX ============ */
+function confetti(ms=2000){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = document.createElement("canvas"); c.className = "confetti"; document.body.appendChild(c);
+  const x = c.getContext("2d"), dpr = devicePixelRatio || 1; c.width = innerWidth*dpr; c.height = innerHeight*dpr;
+  const cols = ["#c6f432","#ff6b5b","#5bc8ff","#ffd23f","#b9a7ff","#15132b"];
+  const ps = Array.from({length:120}, () => ({x:Math.random()*c.width, y:-Math.random()*c.height*.6, w:(6+Math.random()*8)*dpr, h:(4+Math.random()*5)*dpr,
+    vy:(2+Math.random()*4)*dpr, vx:(Math.random()-.5)*3*dpr, a:Math.random()*6, va:(Math.random()-.5)*.3, c:cols[Math.random()*cols.length|0]}));
+  const t0 = performance.now();
+  (function f(t){ x.clearRect(0,0,c.width,c.height);
+    ps.forEach(p => { p.x+=p.vx; p.y+=p.vy; p.a+=p.va; x.save(); x.translate(p.x,p.y); x.rotate(p.a); x.fillStyle=p.c; x.fillRect(-p.w/2,-p.h/2,p.w,p.h); x.restore(); });
+    if (t - t0 < ms) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+function armed(btn, confirmText, fn){
+  if (btn.dataset.armed) { fn(); return; }
+  const orig = btn.textContent; btn.dataset.armed = "1"; btn.textContent = confirmText; btn.style.background = "var(--coral)"; btn.style.color = "#15132b";
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = orig; btn.style.background = ""; btn.style.color = ""; } }, 4000);
+}
+const note = (id, t, bad) => { const e = $("#" + id); if (e) e.innerHTML = t ? `<div class="fb ${bad ? "bad" : "good"} ${bad ? "shake" : ""}">${esc(t)}</div>` : ""; };
+
+/* ============ NAV ============ */
+function go(name){ S.screen = name; save(); render(); window.scrollTo({top:0, behavior:"smooth"}); }
+function render(){
+  if (S.screen !== "board") { stopBoard(); document.body.classList.remove("wide"); }
+  ({home, quiz, result, teach, board: boardScreen}[S.screen] || home)();
+}
+
+/* ============ PESERTA ============ */
+function home(){
+  screen.innerHTML = `
+  <section class="card hero pop stack" style="padding:24px 20px 26px">
+    <span class="sticker" style="right:14px; top:14px; background:var(--sun); transform:rotate(8deg)">BLC</span>
+    <span class="sticker" style="right:46px; top:58px; background:var(--coral); transform:rotate(-6deg)">6 soal</span>
+    <span class="eyebrow" style="color:var(--lime)">Mengenal Diri Sendiri</span>
+    <h1>Vibe<br><em>Check</em></h1>
+    <p>Jawab 6 pertanyaan secara spontan, karena tidak ada jawaban yang salah. Kamu akan tahu karakter belajarmu dan cara terbaik bekerja bareng orang lain. Hasilnya langsung masuk ke papan kelas.</p>
+  </section>
+  <section class="archmini">${AK.map(k => `<div style="background:${ARCH[k].color}">${esc(ARCH[k].name)}<small>${esc(ARCH[k].tag)}</small></div>`).join("")}</section>
+  ${ONLINE ? `<form class="card stack" id="startForm">
+    <label class="field" for="nick">Nama panggilanmu<input class="input" id="nick" maxlength="24" placeholder="mis. Rina" value="${esc(S.name)}" autocomplete="off"></label>
+    <label class="field" for="room">Kode kelas <span class="tiny muted" style="font-weight:500">(5 huruf/angka dari pengajar)</span>
+      <input class="input code" id="room" maxlength="5" placeholder="mis. K7QMB" value="${esc(S.room)}" autocomplete="off"></label>
+    <p class="tiny" style="font-weight:700" id="roomTitleLine" ${S.roomTitle ? "" : "hidden"}>Kelas: ${esc(S.roomTitle)}</p>
+    <div id="homeMsg"></div>
+    ${S.arch ? `<p class="fb good">Kamu sudah selesai: <b>${esc(ARCH[S.arch].name)}</b>. Tekan tombol di bawah untuk melihat hasilmu lagi.</p>` : ""}
+    <button class="btn block" type="submit">${S.arch ? "Lihat hasilku" : S.step > 0 ? "Lanjutkan" : "Mulai Vibe Check"} →</button>
+    ${S.name || S.room ? `<button class="btn alt block" type="button" id="newP">Ganti peserta (HP dipakai orang lain)</button>` : ""}
+  </form>` : `<div class="fb bad">Aplikasi belum tersambung ke database. Pengajar perlu mengisi file <b>config.js</b>.</div>`}
+  <button class="link" id="toTeach" type="button">Saya pengajar →</button>`;
+  $("#toTeach").onclick = () => go("teach");
+  if (!ONLINE) return;
+  const roomIn = $("#room"); roomIn.oninput = () => { roomIn.value = cleanCode(roomIn.value); };
+  $("#startForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const n = $("#nick").value.trim(), code = roomIn.value;
+    if (!n) { $("#nick").classList.add("shake"); $("#nick").focus(); setTimeout(() => $("#nick").classList.remove("shake"), 400); return; }
+    if (code.length !== 5) { note("homeMsg", "Kode kelas terdiri dari 5 huruf/angka. Tanyakan ke pengajar.", true); roomIn.focus(); return; }
+    const btn = e.target.querySelector("[type=submit]"); const label = btn.textContent; btn.disabled = true; btn.textContent = "Memeriksa kode…";
+    try {
+      const info = await api("kq_room_info", {p_code:code});
+      if (info.code !== S.room || n !== S.name) S.sent = false;   // kelas/nama berubah: hasil dikirim ulang
+      S.name = n; S.room = info.code; S.roomTitle = info.title; save();
+      go(S.arch ? "result" : "quiz");
+    } catch(err) { note("homeMsg", err.message, true); btn.disabled = false; btn.textContent = label; }
+  };
+  const np = $("#newP"); if (np) np.onclick = () => armed(np, "Yakin? Data di HP ini dihapus. Klik lagi", () => {
+    newParticipant(); home(); note("homeMsg", "Siap untuk peserta baru. Isi nama dan kode kelas."); $("#nick").focus(); });
+}
+
+function quiz(){
+  if (!S.room || !S.name) return go("home");
+  if (S.answers.length >= VIBE_Q.length) return finishQuiz();
+  S.step = S.answers.length;
+  const Q = VIBE_Q[S.step];
+  screen.innerHTML = `<section class="stack pop">
+    <div class="progress-dots">${VIBE_Q.map((_,k) => `<i class="${k <= S.step ? "on" : ""}"></i>`).join("")}<span>${S.step+1}/${VIBE_Q.length}</span></div>
+    <p class="q">${esc(Q.q)}</p>
+    <div class="opts">${Q.a.map((a,i) => `<button type="button" class="opt" data-i="${i}"><span class="k">${"ABCD"[i]}</span><span>${esc(a[0])}</span></button>`).join("")}</div>
+    <p class="tiny muted">Pilih yang paling mirip kamu, bukan yang “seharusnya”.</p>
+    ${S.step > 0 ? `<button type="button" class="link" id="prev">← Soal sebelumnya</button>` : `<button type="button" class="link" id="prev">← Kembali</button>`}
+  </section>`;
+  let locked = false;
+  screen.querySelectorAll(".opt").forEach(b => b.onclick = () => {
+    if (locked) return; locked = true;            // cegah ketukan ganda
+    b.classList.add("on");
+    S.answers.push(Q.a[+b.dataset.i][1]); save();
+    setTimeout(quiz, 220);
+  });
+  $("#prev").onclick = () => { if (S.answers.length) { S.answers.pop(); save(); quiz(); } else go("home"); };
+}
+function finishQuiz(){
+  const t = {penjelajah:0, perekat:0, perancang:0, penggerak:0}; S.answers.forEach(a => { if (a in t) t[a]++; });
+  const order = AK.slice().sort((a,b) => t[b]-t[a]);
+  S.arch = order[0]; S.tally = t; S.sent = false; save();
+  go("result"); confetti();
+}
+
+function result(){
+  if (!S.arch) return go(S.room ? "quiz" : "home");
+  const A = ARCH[S.arch], t = S.tally || {};
+  const order = AK.slice().sort((a,b) => (t[b]||0)-(t[a]||0));
+  const second = order[0] === S.arch && (t[order[1]]||0) === (t[S.arch]||0) ? `<p class="tiny" style="font-weight:700">Skormu seimbang dengan ${esc(ARCH[order[1]].name)}: kamu punya dua sisi kuat!</p>` : "";
+  screen.innerHTML = `<section class="card arch stack pop" style="background:${A.color}">
+    <span class="pill">KARAKTER BELAJAR ${esc(S.name.toUpperCase())}</span>
+    <h2>${esc(A.name)}</h2><p style="font-weight:700">${esc(A.tag)} · ${esc(A.vibe)}</p>${second}
+    <dl><div><dt>Superpower</dt><dd>${esc(A.power)}</dd></div><div><dt>Blind spot</dt><dd>${esc(A.blind)}</dd></div>
+      <div><dt>Kalau satu tim dengannya</dt><dd>${esc(A.team)}</dd></div></dl>
+  </section>
+  <div id="sendBox" class="send wait">Mengirim ke papan kelas…</div>
+  <section class="card stack"><h3>Komposisi jawabanmu</h3>
+    <div class="bars">${AK.map(k => `<div class="barrow"><span>${esc(ARCH[k].name.replace("Si ",""))}</span><div><i style="width:${(t[k]||0)/VIBE_Q.length*100}%; background:${ARCH[k].color}"></i></div><span>${t[k]||0}</span></div>`).join("")}</div>
+    <p class="tiny muted">Ini refleksi ringan untuk memulai obrolan, bukan tes psikologi. Setiap orang punya semua sisi, hanya kadarnya berbeda. Tidak ada karakter yang lebih baik.</p></section>
+  <section class="fb good"><b>Misi kecil:</b> cari satu teman dengan karakter berbeda dan tanyakan, "Kamu paling nyaman belajar dengan cara apa?"</section>
+  <button class="btn alt block" id="again" type="button">Ulangi Vibe Check</button>
+  <button class="btn alt block" id="newP" type="button">Ganti peserta (HP dipakai orang lain)</button>`;
+  $("#again").onclick = () => armed($("#again"), "Yakin? Hasil diganti setelah selesai. Klik lagi", () => { retake(); go("quiz"); });
+  $("#newP").onclick = () => armed($("#newP"), "Yakin? Klik lagi", () => { newParticipant(); go("home"); note("homeMsg", "Siap untuk peserta baru. Isi nama dan kode kelas."); });
+  if (S.sent) drawSend("ok"); else sendResult();
+}
+function drawSend(state, msg){
+  const box = $("#sendBox"); if (!box) return;
+  box.className = "send " + ({ok:"ok", wait:"wait", err:"err"}[state]);
+  if (state === "ok") box.innerHTML = `✓ Terkirim ke papan kelas ${esc(S.roomTitle || S.room)}. Lihat layar pengajar!`;
+  else if (state === "wait") box.textContent = "Mengirim ke papan kelas…";
+  else { box.innerHTML = `Belum terkirim: ${esc(msg)}<div class="row" style="margin-top:8px"><button class="btn" id="retry" type="button">Coba kirim lagi</button></div>`; $("#retry").onclick = sendResult; }
+}
+let sending = false;
+async function sendResult(){
+  if (sending) return; sending = true; drawSend("wait");
+  try { await api("vc_submit", {p_code:S.room, p_client:clientId(), p_name:S.name, p_arch:S.arch, p_tally:S.tally || {}}); S.sent = true; save(); drawSend("ok"); }
+  catch(e) { S.sent = false; save(); drawSend("err", e.message); }
+  finally { sending = false; }
+}
+
+/* ============ PENGAJAR ============ */
+function teach(){
+  screen.innerHTML = `<section class="card stack pop">
+    <span class="tag">UNTUK PENGAJAR</span>
+    <h2 style="font-size:1.8rem">Papan Vibe Check</h2>
+    ${ONLINE ? `<p class="muted">Buat kelas, lalu tayangkan papannya di Zoom atau proyektor. Peserta scan QR dan menjawab 6 soal. Papan menampilkan komposisi karakter belajar kelas secara langsung dan bisa membentuk kelompok yang beragam secara otomatis.</p>
+    <form id="mkRoom" class="stack"><label class="field" for="roomTitle">Nama kelas<input class="input" id="roomTitle" maxlength="80" placeholder="mis. PFA Keterampilan Angkatan V" autocomplete="off"></label>
+      <button class="btn block" type="submit">Buat kelas baru</button></form>
+    <div id="mkErr"></div>
+    <hr class="dash">
+    <form id="openRoom" class="stack"><label class="field" for="openCode">Sudah punya kelas? Buka papannya
+      <input class="input code" id="openCode" maxlength="5" placeholder="Kode kelas" autocomplete="off"></label>
+      <button class="btn alt block" type="submit">Buka papan</button></form>`
+    : `<div class="fb bad">Fitur ini aktif setelah file <b>config.js</b> diisi (lihat PANDUAN-SETUP).</div>`}
+  </section>
+  <section class="card stack guide">
+    <h3>Alur singkat (±25 menit)</h3>
+    <ol>
+      <li><span class="time">2'</span> Buat kelas, lalu tayangkan papan dengan tombol <b>Layar penuh</b>.</li>
+      <li><span class="time">5'</span> Peserta scan QR, isi nama, dan menjawab 6 soal. Hasil masuk otomatis.</li>
+      <li><span class="time">3'</span> Bahas komposisi kelas: karakter mana yang dominan dan mana yang langka?</li>
+      <li><span class="time">2'</span> Tekan <b>Bentuk kelompok beragam</b>, lalu bacakan atau salin daftarnya ke chat Zoom.</li>
+      <li><span class="time">13'</span> Diskusi kelompok: masing-masing menjawab "Bagaimana cara terbaik bekerja dengan saya?"</li>
+    </ol>
+    <h3>Pertanyaan debriefing</h3>
+    <ul>
+      <li>Apakah komposisi karakter di kelompokmu beragam? Apa untungnya?</li>
+      <li>Apa blind spot karaktermu, dan siapa di kelompok yang bisa melengkapinya?</li>
+      <li>Umpan balik apa dari teman yang membuatmu lebih mengenal dirimu sendiri?</li>
+    </ul>
+    <h3>Catatan</h3>
+    <ul>
+      <li>Ini refleksi ringan, bukan tes psikologi. Tekankan bahwa tidak ada karakter yang lebih baik.</li>
+      <li>Satu HP dihitung satu peserta. Mengulang Vibe Check akan mengganti hasil lama.</li>
+      <li>Nama peserta disembunyikan di papan, kecuali Anda menekan <b>Tampilkan nama</b>.</li>
+      <li>Kode kelas dari Komitmen Quest atau Norma Kelas juga bisa dipakai di sini.</li>
+    </ul>
+  </section>
+  <button class="btn alt block" id="back" type="button">← Halaman peserta</button>`;
+  $("#back").onclick = () => go("home");
+  if (!ONLINE) return;
+  $("#openCode").oninput = (e) => { e.target.value = cleanCode(e.target.value); };
+  $("#mkRoom").onsubmit = async (e) => {
+    e.preventDefault(); const t = $("#roomTitle").value.trim(); const b = e.target.querySelector("button");
+    if (t.length < 3) { $("#mkErr").innerHTML = `<div class="fb bad">Nama kelas minimal 3 karakter.</div>`; return; }
+    b.disabled = true;
+    try { const r = await api("kq_create_room", {p_title:t}); setToken(r.code, r.token); openBoard(r.code); }
+    catch(err) { $("#mkErr").innerHTML = `<div class="fb bad">${esc(err.message)}</div>`; b.disabled = false; }
+  };
+  $("#openRoom").onsubmit = (e) => { e.preventDefault(); const c = $("#openCode").value; if (c) openBoard(c); };
+}
+
+/* ---- Papan ---- */
+let board = {code:"", timer:null, data:null, sig:"", showNames:false, groups:null, gsize:5};
+function openBoard(code){ board.code = cleanCode(code); board.data = null; board.groups = null; history.replaceState(null, "", `${baseUrl()}?papan=${board.code}`); go("board"); }
+function boardScreen(){
+  document.body.classList.add("wide");
+  const code = board.code; const token = getToken(code);
+  const joinUrl = `${baseUrl()}?kelas=${code}`;
+  screen.innerHTML = `<section class="board">
+    <header class="bhead">
+      <div class="btitle"><span class="eyebrow" style="color:var(--lime)">Vibe Check · Karakter Belajar Kelas</span><h1 id="bTitle">Memuat…</h1></div>
+      <div class="bjoin"><div><small>Buka</small><b class="burl">${esc(joinUrl.replace(/^https?:\/\//,""))}</b><small>Kode kelas</small><b class="bcode">${esc(code)}</b></div>
+        <div id="qr" class="qr" aria-label="Kode QR untuk bergabung"></div></div>
+    </header>
+    <div class="bgrid">
+      <div class="stack">
+        <div class="acards" id="acards">${AK.map(k => `<div class="acard" style="background:${ARCH[k].hex}" data-k="${k}">
+          <div class="top"><div><span class="tg">${esc(ARCH[k].tag)}</span><h3>${esc(ARCH[k].name)}</h3></div>
+            <div><div class="num" id="n-${k}">0</div><div class="pct" id="p-${k}">0%</div></div></div>
+          <div class="names" id="nm-${k}" ${board.showNames ? "" : "hidden"}></div>
+          <div class="meter"><i id="m-${k}" style="width:0%"></i></div></div>`).join("")}</div>
+        <div class="bstat"><span id="bTotal">0</span> peserta selesai · <span id="bOpen"></span></div>
+      </div>
+      <aside class="bside">
+        <div class="bpanel"><h3>Komposisi kelas</h3><svg class="donut" id="donut" viewBox="0 0 42 42" aria-hidden="true"></svg>
+          <div class="legend">${AK.map(k => `<span><i style="background:${ARCH[k].hex}"></i>${esc(ARCH[k].name.replace("Si ",""))}</span>`).join("")}</div></div>
+        <div class="bpanel"><h3>Bacaan untuk kelas</h3><div id="insight" class="stack" style="gap:8px"><p>Menunggu peserta…</p></div></div>
+      </aside>
+    </div>
+    <div class="bpanel">
+      <h3>Bentuk kelompok beragam</h3>
+      <p>Setiap kelompok diisi campuran karakter yang berbeda, supaya peserta saling melengkapi.</p>
+      <div class="gctl"><label for="gsize">Orang per kelompok <input id="gsize" type="number" min="2" max="12" value="${board.gsize}"></label>
+        <button class="btn" id="gMake" type="button">${board.groups ? "Acak ulang" : "Bentuk kelompok"}</button>
+        ${board.groups ? `<button class="btn alt" id="gCopy" type="button">Salin daftar kelompok</button><button class="btn alt" id="gClear" type="button">Hapus kelompok</button>` : ""}
+        <span id="gNote" class="tiny" style="color:#bdb8e3"></span></div>
+      <div class="groups" id="groups"></div>
+    </div>
+    <div class="bctl">
+      ${token ? `<button class="btn alt" id="bToggle">Tutup pengisian</button>
+        <button class="btn alt" id="bReset">Reset jawaban</button>` : `<span class="tiny" style="color:#bdb8e3">Mode lihat saja. Buka papan dari perangkat pembuat kelas, atau pakai tautan kendali, untuk mengatur.</span>`}
+      <button class="btn alt" id="bNames">${board.showNames ? "Sembunyikan nama" : "Tampilkan nama"}</button>
+      <button class="btn alt" id="bCopy">Salin tautan peserta</button>
+      ${token ? `<button class="btn alt" id="bAdmin">Salin tautan kendali</button>` : ""}
+      <button class="btn alt" id="bFull">Layar penuh</button>
+      <button class="btn alt" id="bBack">Keluar</button>
+    </div>
+    <div id="bMsg"></div>
+  </section>`;
+  board.sig = "";
+  try { const qr = qrcode(0, "M"); qr.addData(joinUrl); qr.make(); $("#qr").innerHTML = qr.createSvgTag({cellSize:4, margin:0, scalable:true}); } catch(e) { $("#qr").hidden = true; }
+  const msg = (t, bad) => { $("#bMsg").innerHTML = t ? `<div class="fb ${bad?"bad":"good"}" style="margin-top:10px">${esc(t)}</div>` : ""; if (t) setTimeout(() => { const m = $("#bMsg"); if (m) m.innerHTML = ""; }, 4000); };
+  const copy = async (text, label) => { try { await navigator.clipboard.writeText(text); msg(label + " disalin."); } catch(e) { msg(text); } };
+  $("#bCopy").onclick = () => copy(joinUrl, "Tautan peserta");
+  if ($("#bAdmin")) $("#bAdmin").onclick = () => copy(`${baseUrl()}?papan=${code}&t=${token}`, "Tautan kendali (jangan dibagikan ke peserta)");
+  $("#bNames").onclick = () => { board.showNames = !board.showNames; boardScreen(); };
+  $("#bBack").onclick = () => { stopBoard(); history.replaceState(null, "", baseUrl()); document.body.classList.remove("wide"); go("teach"); };
+  $("#bFull").onclick = async () => { try { document.fullscreenElement ? await document.exitFullscreen() : await document.documentElement.requestFullscreen(); } catch(e) {} };
+  $("#gsize").onchange = (e) => { board.gsize = Math.min(12, Math.max(2, parseInt(e.target.value, 10) || 5)); e.target.value = board.gsize; };
+  $("#gMake").onclick = () => {
+    const people = board.data?.people || [];
+    if (people.length < 2) { msg("Minimal 2 peserta untuk membentuk kelompok.", true); return; }
+    board.gsize = Math.min(12, Math.max(2, parseInt($("#gsize").value, 10) || 5));
+    board.groups = makeGroups(people, board.gsize); boardScreen();
+  };
+  if ($("#gCopy")) $("#gCopy").onclick = () => copy(board.groups.map((g,i) => `Kelompok ${i+1}: ` + g.map(p => `${p.name} (${ARCH[p.arch].name.replace("Si ","")})`).join(", ")).join("\n"), "Daftar kelompok");
+  if ($("#gClear")) $("#gClear").onclick = () => { board.groups = null; boardScreen(); };
+  if (token) {
+    $("#bToggle").onclick = async () => { try { await api("kq_admin", {p_code:code, p_token:token, p_action: board.data?.is_open ? "close" : "open", p_arg:null}); pollBoard(); } catch(e) { msg(e.message, true); } };
+    $("#bReset").onclick = () => {
+      const b = $("#bReset");
+      if (b.dataset.armed) { b.textContent = "Reset jawaban"; delete b.dataset.armed;
+        api("vc_reset", {p_code:code, p_token:token}).then(() => { board.groups = null; boardScreen(); }).catch(e => msg(e.message, true)); }
+      else { b.dataset.armed = "1"; b.textContent = "Yakin? Klik lagi untuk reset"; setTimeout(() => { if (b.isConnected) { b.textContent = "Reset jawaban"; delete b.dataset.armed; } }, 4000); }
+    };
+  }
+  drawGroups();
+  if (board.data) { const d = board.data; board.data = null; applyBoard(d); }
+  stopBoard(); pollBoard(); board.timer = setInterval(() => { if (document.visibilityState === "visible") pollBoard(); }, 3000);
+}
+function stopBoard(){ clearInterval(board.timer); board.timer = null; }
+async function pollBoard(){
+  if (S.screen !== "board") return stopBoard();
+  let d; try { d = await api("vc_results", {p_code:board.code}); } catch(e) {
+    if (board.data) return;   // gangguan sesaat: tetap tampilkan data terakhir
+    const notFound = /tidak ditemukan/i.test(e.message);
+    if ($("#bTitle")) $("#bTitle").textContent = notFound ? "Kode kelas tidak ditemukan" : "Gagal memuat papan";
+    const ins = $("#insight");
+    if (ins) ins.innerHTML = notFound
+      ? `<p>Kode <b>${esc(board.code)}</b> belum terdaftar. Klik Keluar, lalu buat kelas baru atau buka papan dengan kode yang benar.</p>`
+      : `<p>${esc(e.message)}. Papan akan mencoba lagi otomatis setiap 3 detik.</p>`;
+    if (notFound) { stopBoard(); const j = document.querySelector(".bjoin"); if (j) j.hidden = true; }
+    return;
+  }
+  applyBoard(d);
+}
+function applyBoard(d){
+  board.data = d; const sig = JSON.stringify(d); if (sig === board.sig) return; board.sig = sig;
+  if (!$("#acards")) return;
+  $("#bTitle").textContent = d.title; $("#bTotal").textContent = d.total;
+  $("#bOpen").innerHTML = d.is_open ? '<span style="color:var(--lime)">pengisian dibuka</span>' : '<span style="color:var(--coral)">pengisian ditutup</span>';
+  if ($("#bToggle")) $("#bToggle").textContent = d.is_open ? "Tutup pengisian" : "Buka pengisian";
+  const tot = d.total || 0, c = (k) => d.arch?.[k] || 0;
+  AK.forEach(k => {
+    $("#n-"+k).textContent = c(k); $("#p-"+k).textContent = (tot ? Math.round(c(k)/tot*100) : 0) + "%";
+    $("#m-"+k).style.width = (tot ? c(k)/tot*100 : 0) + "%";
+    const nm = $("#nm-"+k); if (nm) nm.innerHTML = d.people.filter(p => p.arch === k).map(p => `<span>${esc(p.name)}</span>`).join("");
+  });
+  // donat
+  const R = 15.9155; let off = 25;
+  $("#donut").innerHTML = `<circle cx="21" cy="21" r="${R}" fill="none" stroke="#2a2652" stroke-width="6"/>` + (tot ? AK.map(k => {
+    const v = c(k)/tot*100; const s = v ? `<circle cx="21" cy="21" r="${R}" fill="none" stroke="${ARCH[k].hex}" stroke-width="6" stroke-dasharray="${v} ${100-v}" stroke-dashoffset="${off}"/>` : "";
+    off -= v; return s; }).join("") : "") + `<text x="21" y="23.5" text-anchor="middle" fill="#fff" style="font:800 7px var(--mono)">${tot}</text>`;
+  // bacaan
+  const ins = $("#insight");
+  if (!tot) ins.innerHTML = `<p>Menunggu peserta menyelesaikan Vibe Check…</p>`;
+  else {
+    const order = AK.slice().sort((a,b) => c(b)-c(a));
+    const top = order.filter(k => c(k) === c(order[0])), low = order.filter(k => c(k) === c(order[3]));
+    const nm = (ks) => ks.map(k => `<b>${esc(ARCH[k].name)}</b>`).join(" & ");
+    ins.innerHTML = tot < 4 ? `<p>Baru ${tot} peserta. Bacaan muncul setelah lebih banyak yang selesai.</p>`
+      : `<p>Paling banyak: ${nm(top)} (${c(order[0])} orang). ${esc(ARCH[top[0]].power)}</p>
+         ${c(order[0]) !== c(order[3]) ? `<p>Paling sedikit: ${nm(low)} (${c(order[3])} orang). Pastikan setiap kelompok punya minimal satu, atau ajak semua peserta melatih sisi ini.</p>` : `<p>Komposisi kelas seimbang. Kondisi ini bagus untuk kerja kelompok.</p>`}
+         <p style="color:#bdb8e3">Waspadai blind spot dominan: ${esc(ARCH[top[0]].blind.charAt(0).toLowerCase() + ARCH[top[0]].blind.slice(1))}</p>`;
+  }
+  drawGroups();
+}
+// Kelompok beragam: tiap karakter diacak, lalu dibagikan bergiliran ke setiap kelompok.
+function makeGroups(people, size){
+  const n = people.length, g = Math.max(1, Math.round(n / size));
+  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const buckets = AK.map(k => shuffle(people.filter(p => p.arch === k))).sort((a,b) => b.length - a.length);
+  const flat = buckets.flat(); const groups = Array.from({length:g}, () => []);
+  const start = Math.floor(Math.random() * g);
+  flat.forEach((p,i) => groups[(start + i) % g].push(p));
+  return groups;
+}
+function drawGroups(){
+  const box = $("#groups"); if (!box) return;
+  if (!board.groups) { box.innerHTML = ""; const gn = $("#gNote"); if (gn) gn.textContent = ""; return; }
+  box.innerHTML = board.groups.map((g,i) => `<div class="group"><h4>Kelompok ${i+1} <span style="color:#bdb8e3; font:600 .8rem var(--mono)">· ${g.length} orang</span></h4>
+    <ul>${g.map(p => `<li><i style="background:${ARCH[p.arch].hex}"></i>${esc(p.name)}</li>`).join("")}</ul></div>`).join("");
+  const inGroup = new Set(board.groups.flat().map(p => p.id));
+  const late = (board.data?.people || []).filter(p => !inGroup.has(p.id)).length;
+  const gn = $("#gNote"); if (gn) gn.textContent = late ? `${late} peserta baru belum masuk kelompok. Tekan "Acak ulang" untuk menyertakan mereka.` : "";
+}
+
+/* ============ BOOT ============ */
+(() => {
+  const q = new URLSearchParams(location.search);
+  const papan = cleanCode(q.get("papan")), t = q.get("t"), kelas = cleanCode(q.get("kelas"));
+  if (papan) {
+    if (t && /^[0-9a-f-]{36}$/i.test(t)) { setToken(papan, t); history.replaceState(null, "", `${baseUrl()}?papan=${papan}`); }
+    board.code = papan; S.screen = "board";
+  } else {
+    if (S.screen === "board") S.screen = "teach";
+    if (kelas) {
+      // Dibuka lewat QR / tautan kelas: selalu mulai dari halaman awal (nama & kode kelas).
+      S.screen = "home";
+      if (kelas !== S.room) { S.room = kelas; S.roomTitle = ""; S.sent = false; }
+      save();
+      history.replaceState(null, "", baseUrl());
+      // Hasil pengecekan datang belakangan: perbarui baris nama kelas saja, JANGAN gambar ulang
+      // halaman agar nama yang sedang diketik peserta tidak terhapus (penting saat sinyal lambat).
+      if (ONLINE) api("kq_room_info", {p_code:kelas}).then(i => {
+          if (S.room !== kelas) return;
+          S.roomTitle = i.title; save();
+          const l = $("#roomTitleLine"); if (l) { l.textContent = "Kelas: " + i.title; l.hidden = false; }
+        }).catch((e) => {
+          if (S.room !== kelas || !/tidak ditemukan/i.test(e.message)) return;
+          S.room = ""; S.roomTitle = ""; save();
+          const r = $("#room"); if (r && r.value === kelas) r.value = "";
+          note("homeMsg", "Kode kelas dari tautan tidak ditemukan. Ketik kode kelas dari pengajar.", true);
+        });
+    }
+  }
+})();
+render();
+</script>
+</body>
+</html>
