@@ -302,7 +302,7 @@ function home(){
     <button class="btn block" type="submit">${S.arch ? "Lihat hasilku" : S.step > 0 ? "Lanjutkan" : "Mulai Vibe Check"} →</button>
     ${S.name || S.room ? `<button class="btn alt block" type="button" id="newP">Ganti peserta (HP dipakai orang lain)</button>` : ""}
   </form>` : `<div class="fb bad">Aplikasi belum tersambung ke database. Pengajar perlu mengisi file <b>config.js</b>.</div>`}
-  <button class="link" id="toTeach" type="button">Saya pengajar →</button>`;
+  <button class="link" id="toTeach" type="button">🔒 Masuk pengajar</button>`;
   $("#toTeach").onclick = () => go("teach");
   if (!ONLINE) return;
   const roomIn = $("#room"); roomIn.oninput = () => { roomIn.value = cleanCode(roomIn.value); };
@@ -388,21 +388,63 @@ async function sendResult(){
   finally { sending = false; }
 }
 
-/* ============ PENGAJAR ============ */
+/* ============ PENGAJAR (dilindungi PIN) ============ */
+let teacherPin = "";   // disimpan di memori saja, tidak di HP/laptop
+const myRooms = () => { const out = [];
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("vibe-check:admin:") && localStorage.getItem(k)) out.push(k.slice(17)); } } catch(e) {}
+  return out.sort(); };
+async function checkPin(pin){ const r = await api("vc_pin_check", {p_pin:pin}); if (!r.ok) throw new Error(r.error || "PIN pengajar salah"); }
+
 function teach(){
+  if (!ONLINE) { screen.innerHTML = `<div class="fb bad">Fitur ini aktif setelah file <b>config.js</b> diisi (lihat PANDUAN-SETUP).</div><button class="btn alt block" id="back" type="button">← Halaman peserta</button>`; $("#back").onclick = () => go("home"); return; }
+  const rooms = myRooms();
+  if (!teacherPin) {
+    screen.innerHTML = `<section class="card stack pop">
+      <span class="tag">🔒 KHUSUS PENGAJAR</span>
+      <h2 style="font-size:1.8rem">Masuk pengajar</h2>
+      <p class="muted">Halaman ini hanya untuk pengajar. Peserta silakan kembali ke halaman peserta.</p>
+      <form id="pinForm" class="stack"><label class="field" for="pin">PIN pengajar
+        <input class="input" id="pin" type="password" maxlength="64" autocomplete="current-password" placeholder="••••••"></label>
+        <button class="btn block" type="submit">Masuk</button></form>
+      <div id="pinMsg"></div>
+    </section>
+    ${rooms.length ? `<section class="card stack"><h3>Kelas yang dibuat dari perangkat ini</h3>
+      <p class="tiny muted">Perangkat ini tercatat sebagai pembuat kelas berikut, jadi papannya bisa dibuka tanpa PIN.</p>
+      <div class="row">${rooms.map(c => `<button class="btn alt" type="button" data-room="${esc(c)}" style="font-family:var(--mono); letter-spacing:.15em">${esc(c)}</button>`).join("")}</div></section>` : ""}
+    <button class="btn alt block" id="back" type="button">← Halaman peserta</button>`;
+    $("#back").onclick = () => go("home");
+    screen.querySelectorAll("[data-room]").forEach(b => b.onclick = () => openBoard(b.dataset.room));
+    $("#pinForm").onsubmit = async (e) => {
+      e.preventDefault(); const pin = $("#pin").value; const b = e.target.querySelector("button");
+      if (!pin) { $("#pin").focus(); return; }
+      b.disabled = true; b.textContent = "Memeriksa…";
+      try { await checkPin(pin); teacherPin = pin; teach(); }
+      catch(err) { note("pinMsg", err.message, true); b.disabled = false; b.textContent = "Masuk"; $("#pin").select(); }
+    };
+    setTimeout(() => $("#pin") && $("#pin").focus(), 50);
+    return;
+  }
   screen.innerHTML = `<section class="card stack pop">
-    <span class="tag">UNTUK PENGAJAR</span>
+    <span class="tag" style="background:var(--lime)">✓ MASUK SEBAGAI PENGAJAR</span>
     <h2 style="font-size:1.8rem">Papan Vibe Check</h2>
-    ${ONLINE ? `<p class="muted">Buat kelas, lalu tayangkan papannya di Zoom atau proyektor. Peserta scan QR dan menjawab 6 soal. Papan menampilkan komposisi karakter belajar kelas secara langsung dan bisa membentuk kelompok yang beragam secara otomatis.</p>
+    <p class="muted">Buat kelas, lalu tayangkan papannya di Zoom atau proyektor. Peserta scan QR dan menjawab 6 soal. Papan menampilkan komposisi karakter belajar kelas secara langsung dan bisa membentuk kelompok yang beragam secara otomatis.</p>
     <form id="mkRoom" class="stack"><label class="field" for="roomTitle">Nama kelas<input class="input" id="roomTitle" maxlength="80" placeholder="mis. PFA Keterampilan Angkatan V" autocomplete="off"></label>
       <button class="btn block" type="submit">Buat kelas baru</button></form>
     <div id="mkErr"></div>
     <hr class="dash">
     <form id="openRoom" class="stack"><label class="field" for="openCode">Sudah punya kelas? Buka papannya
       <input class="input code" id="openCode" maxlength="5" placeholder="Kode kelas" autocomplete="off"></label>
-      <button class="btn alt block" type="submit">Buka papan</button></form>`
-    : `<div class="fb bad">Fitur ini aktif setelah file <b>config.js</b> diisi (lihat PANDUAN-SETUP).</div>`}
+      <button class="btn alt block" type="submit">Buka papan</button></form>
+    <div id="openErr"></div>
+    ${rooms.length ? `<p class="tiny muted">Kelas dari perangkat ini: ${rooms.map(c => `<button class="link" type="button" data-room="${esc(c)}" style="font-family:var(--mono); padding:2px 6px">${esc(c)}</button>`).join(" ")}</p>` : ""}
   </section>
+  <details class="card stack"><summary style="font-weight:700; cursor:pointer">Ganti PIN pengajar</summary>
+    <form id="pinChange" class="stack" style="margin-top:12px">
+      <label class="field" for="pinOld">PIN lama<input class="input" id="pinOld" type="password" maxlength="64" autocomplete="current-password"></label>
+      <label class="field" for="pinNew">PIN baru (minimal 6 karakter)<input class="input" id="pinNew" type="password" maxlength="64" autocomplete="new-password"></label>
+      <button class="btn alt block" type="submit">Simpan PIN baru</button></form>
+    <div id="pinChgMsg"></div>
+  </details>
   <section class="card stack guide">
     <h3>Alur singkat (±25 menit)</h3>
     <ol>
@@ -422,22 +464,63 @@ function teach(){
     <ul>
       <li>Ini refleksi ringan, bukan tes psikologi. Tekankan bahwa tidak ada karakter yang lebih baik.</li>
       <li>Satu HP dihitung satu peserta. Mengulang Vibe Check akan mengganti hasil lama.</li>
-      <li>Nama peserta disembunyikan di papan, kecuali Anda menekan <b>Tampilkan nama</b>.</li>
+      <li>Papan hanya bisa dibuka dari perangkat pembuat kelas atau dengan PIN. Jangan bagikan PIN dan tautan kendali.</li>
       <li>Kode kelas dari Komitmen Quest atau Norma Kelas juga bisa dipakai di sini.</li>
     </ul>
   </section>
-  <button class="btn alt block" id="back" type="button">← Halaman peserta</button>`;
+  <div class="row"><button class="btn alt" id="logout" type="button">Keluar dari mode pengajar</button><button class="btn alt" id="back" type="button">← Halaman peserta</button></div>`;
   $("#back").onclick = () => go("home");
-  if (!ONLINE) return;
+  $("#logout").onclick = () => { teacherPin = ""; go("home"); };
+  screen.querySelectorAll("[data-room]").forEach(b => b.onclick = () => openBoard(b.dataset.room));
   $("#openCode").oninput = (e) => { e.target.value = cleanCode(e.target.value); };
   $("#mkRoom").onsubmit = async (e) => {
     e.preventDefault(); const t = $("#roomTitle").value.trim(); const b = e.target.querySelector("button");
     if (t.length < 3) { $("#mkErr").innerHTML = `<div class="fb bad">Nama kelas minimal 3 karakter.</div>`; return; }
     b.disabled = true;
-    try { const r = await api("kq_create_room", {p_title:t}); setToken(r.code, r.token); openBoard(r.code); }
-    catch(err) { $("#mkErr").innerHTML = `<div class="fb bad">${esc(err.message)}</div>`; b.disabled = false; }
+    try {
+      const r = await api("vc_create_room", {p_title:t, p_pin:teacherPin});
+      if (!r.ok) throw new Error(r.error || "Gagal membuat kelas");
+      setToken(r.code, r.token); openBoard(r.code);
+    } catch(err) { $("#mkErr").innerHTML = `<div class="fb bad">${esc(err.message)}</div>`; b.disabled = false; }
   };
-  $("#openRoom").onsubmit = (e) => { e.preventDefault(); const c = $("#openCode").value; if (c) openBoard(c); };
+  $("#openRoom").onsubmit = async (e) => {
+    e.preventDefault(); const c = $("#openCode").value; if (c.length !== 5) { note("openErr", "Kode kelas terdiri dari 5 huruf/angka.", true); return; }
+    if (getToken(c)) return openBoard(c);
+    try { const r = await api("vc_teacher_login", {p_code:c, p_pin:teacherPin}); if (!r.ok) throw new Error(r.error); setToken(r.code, r.token); openBoard(r.code); }
+    catch(err) { note("openErr", err.message, true); }
+  };
+  $("#pinChange").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const r = await api("vc_pin_set", {p_new:$("#pinNew").value, p_old:$("#pinOld").value});
+      if (!r.ok) throw new Error(r.error);
+      teacherPin = $("#pinNew").value; e.target.reset(); note("pinChgMsg", "PIN berhasil diganti. Gunakan PIN baru mulai sekarang.");
+    } catch(err) { note("pinChgMsg", err.message, true); }
+  };
+}
+
+// Papan tanpa hak akses: minta PIN
+function boardLock(msg){
+  stopBoard(); document.body.classList.add("wide");
+  const code = board.code;
+  screen.innerHTML = `<section class="board" style="max-width:520px; margin:40px auto 0">
+    <div class="bpanel stack" style="gap:14px">
+      <span class="eyebrow" style="color:var(--lime)">🔒 Papan khusus pengajar</span>
+      <h2 style="font-size:1.6rem">Kelas ${esc(code)}</h2>
+      <p>Papan hanya bisa dibuka dari perangkat pembuat kelas atau dengan PIN pengajar.${msg ? "" : " Peserta: silakan kembali ke halaman peserta."}</p>
+      <form id="lockForm" class="stack"><input class="input" id="lockPin" type="password" maxlength="64" placeholder="PIN pengajar" autocomplete="current-password" style="color:#15132b; background:#fff">
+        <button class="btn block" type="submit">Buka papan</button></form>
+      <div id="lockMsg"></div>
+      <button class="btn alt block" id="lockBack" type="button" style="background:#1d1a3a; color:#fff; border-color:#000">← Halaman peserta</button>
+    </div></section>`;
+  if (msg) note("lockMsg", msg, true);
+  $("#lockBack").onclick = () => { history.replaceState(null, "", baseUrl()); document.body.classList.remove("wide"); go("home"); };
+  $("#lockForm").onsubmit = async (e) => {
+    e.preventDefault(); const pin = $("#lockPin").value; if (!pin) return;
+    try { const r = await api("vc_teacher_login", {p_code:code, p_pin:pin}); if (!r.ok) throw new Error(r.error); teacherPin = pin; setToken(r.code, r.token); boardScreen(); }
+    catch(err) { note("lockMsg", err.message, true); $("#lockPin").select(); }
+  };
+  setTimeout(() => $("#lockPin") && $("#lockPin").focus(), 50);
 }
 
 /* ---- Papan ---- */
@@ -446,6 +529,7 @@ function openBoard(code){ board.code = cleanCode(code); board.data = null; board
 function boardScreen(){
   document.body.classList.add("wide");
   const code = board.code; const token = getToken(code);
+  if (!token) return boardLock();
   const joinUrl = `${baseUrl()}?kelas=${code}`;
   screen.innerHTML = `<section class="board">
     <header class="bhead">
@@ -478,11 +562,11 @@ function boardScreen(){
       <div class="groups" id="groups"></div>
     </div>
     <div class="bctl">
-      ${token ? `<button class="btn alt" id="bToggle">Tutup pengisian</button>
-        <button class="btn alt" id="bReset">Reset jawaban</button>` : `<span class="tiny" style="color:#bdb8e3">Mode lihat saja. Buka papan dari perangkat pembuat kelas, atau pakai tautan kendali, untuk mengatur.</span>`}
+      <button class="btn alt" id="bToggle">Tutup pengisian</button>
+      <button class="btn alt" id="bReset">Reset jawaban</button>
       <button class="btn alt" id="bNames">${board.showNames ? "Sembunyikan nama" : "Tampilkan nama"}</button>
       <button class="btn alt" id="bCopy">Salin tautan peserta</button>
-      ${token ? `<button class="btn alt" id="bAdmin">Salin tautan kendali</button>` : ""}
+      <button class="btn alt" id="bAdmin">Salin tautan kendali</button>
       <button class="btn alt" id="bFull">Layar penuh</button>
       <button class="btn alt" id="bBack">Keluar</button>
     </div>
@@ -522,7 +606,8 @@ function boardScreen(){
 function stopBoard(){ clearInterval(board.timer); board.timer = null; }
 async function pollBoard(){
   if (S.screen !== "board") return stopBoard();
-  let d; try { d = await api("vc_results", {p_code:board.code}); } catch(e) {
+  let d; try { d = await api("vc_results", {p_code:board.code, p_token:getToken(board.code)}); } catch(e) {
+    if (/akses pengajar/i.test(e.message)) { try { localStorage.removeItem(ADMIN_KEY(board.code)); } catch(_) {} return boardLock("Akses perangkat ini sudah tidak berlaku. Masukkan PIN pengajar."); }
     if (board.data) return;   // gangguan sesaat: tetap tampilkan data terakhir
     const notFound = /tidak ditemukan/i.test(e.message);
     if ($("#bTitle")) $("#bTitle").textContent = notFound ? "Kode kelas tidak ditemukan" : "Gagal memuat papan";
